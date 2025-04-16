@@ -66,16 +66,6 @@ The dashboard includes several data visualizations:
 3. **Audit Ratio Bars**: Compare XP given vs. received in audits
 4. **XP Timeline Graph**: Interactive chart showing XP growth over time
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -83,4 +73,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgements
 
 - Zone01 Normandie for providing the GraphQL API
-- All contributors who have helped improve this dashboard
