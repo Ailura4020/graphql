@@ -270,12 +270,18 @@ function populateSidebar(userData) {
       <p class="join-date"><strong>Joined:</strong> ${new Date(userData.createdAt).toLocaleDateString()}</p>
     </div>
     <div class="logout-container">
-      <button onclick="logout()" class="logout-btn">Logout</button>
+      <button id="logoutButton" class="logout-btn">Logout</button>
     </div>
   `;
   
   sidebar.innerHTML = html;
   
+  // Add event listener to the logout button we just created
+  const logoutButton = document.getElementById('logoutButton');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', logout);
+  }
+
   // Add some styling for the progress bar
   const style = document.createElement('style');
   style.textContent = `
@@ -1052,6 +1058,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginForm) {
     loginForm.addEventListener('submit', handleLogin);
   } else {
+    // Set up logout button event listener
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', logout);
+    }
+    
     loadStudentData();
   }
 });
