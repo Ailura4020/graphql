@@ -29,17 +29,9 @@ git clone https://github.com/your-username/GraphQL.git
 cd GraphQL
 ```
 
-2. Create an `api.js` file with your Zone01 API endpoints (this file is gitignored for security):
-```javascript
-// api.js - DO NOT COMMIT THIS FILE
-export const GRAPHQL_URL = "your-graphql-endpoint";
-export const AUTH_URL = "your-auth-endpoint";
-```
 
-> **Security Note**: The `api.js` file is included in `.gitignore` to prevent exposing API endpoints. Never commit sensitive endpoints or credentials to a public repository.
-
-3. Open the project in your preferred code editor
-4. Use a local development server like Live Server to run the application
+2. Open the project in your preferred code editor
+3. Use a local development server like Live Server to run the application
 
 ## Usage
 
@@ -54,7 +46,6 @@ export const AUTH_URL = "your-auth-endpoint";
 
 - Your credentials are never stored locally - only the JWT authentication token
 - The token is automatically removed when logging out
-- API endpoints are stored in a gitignored file to prevent exposure in public repositories
 - For production deployment, consider using environment variables instead of hardcoded values
 
 ## Data Visualization
