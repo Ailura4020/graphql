@@ -242,10 +242,9 @@ function populateSidebar(userData) {
   const lastName = userData.public?.lastName || userAttrs.lastName || '';
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : userData.login;
   
-  // These fields may not be in the API - adjust as needed based on your API response
-  const location = userAttrs.location || userAttrs.country || 'Not specified';
-  const phoneNumber = userAttrs.Phone || userAttrs.phoneNumber || 'Not specified';
-  const dateOfBirth = userAttrs.dateOfBirth || userAttrs.birthDate || 'Not specified';
+  const location =  userAttrs.country || 'Not specified';
+  const phoneNumber = userAttrs.Phone || 'Not specified';
+  const dateOfBirth = userAttrs.dateOfBirth || 'Not specified';
   
   // Create user profile section
   let html = `
