@@ -25,8 +25,8 @@ A visualization dashboard for Zone01 student data using the GraphQL API. This we
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/your-username/graphql-dashboard.git
-cd graphql-dashboard
+git clone https://github.com/your-username/GraphQL.git
+cd GraphQL
 ```
 
 2. Create an `api.js` file with your Zone01 API endpoints (this file is gitignored for security):
