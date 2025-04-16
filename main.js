@@ -104,7 +104,7 @@ const FULL_STUDENT_QUERY = `
 
 // Function to execute GraphQL queries
 async function executeGraphQLQuery(query, variables = {}) {
-  let token = localStorage.getItem('authToken');
+  let token = sessionStorage.getItem('authToken');
   console.log("Token exists:", !!token);
   
   if (!token) {
@@ -115,7 +115,7 @@ async function executeGraphQLQuery(query, variables = {}) {
   // Remove quotes if they exist (as an extra precaution)
   if (token.startsWith('"') && token.endsWith('"')) {
     token = token.slice(1, -1);
-    localStorage.setItem('authToken', token); // Update the stored token
+    sessionStorage.setItem('authToken', token); // Update the stored token
     console.log("Removed quotes from token in storage");
   }
 
@@ -1050,8 +1050,78 @@ function addTooltipsToGraph(graphBox, points, dateMin, dateMax, xpMax, width, he
   });
 }
 
+// Add this helper function to check if a token is expired
+function isTokenExpired(token) {
+  try {
+    // JWT tokens are split into three parts by dots
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    
+    // Decode the middle part (payload)
+    const payload = JSON.parse(atob(parts[1]));
+    
+    // Check if the token has an expiration time
+    if (!payload.exp) return false;
+    
+    // Compare the expiration time with current time
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  } catch (error) {
+    // If any error occurs during parsing, consider the token invalid
+    console.error('Error parsing token:', error);
+    return true;
+  }
+}
+
+function checkAuth() {
+  const token = sessionStorage.getItem('authToken');
+  const isLoginPage = window.location.pathname.includes('login.html') || 
+                     window.location.pathname.endsWith('/');
+  
+  // Clean up invalid or expired tokens
+  if (token) {
+    // Check if token is properly formatted and not expired
+    if (!token.includes('.') || token.split('.').length !== 3 || isTokenExpired(token)) {
+      console.log('Found invalid or expired token, removing it');
+      sessionStorage.removeItem('authToken');
+      // If not on login page, we'll need to redirect after clearing the token
+      if (!isLoginPage) {
+        window.location.href = 'login.html';
+        return false;
+      }
+    }
+  }
+  
+  // Regular auth check
+  if (!token && !isLoginPage) {
+    // If no token and not on login page, redirect to login
+    window.location.href = 'login.html';
+    return false;
+  } else if (token && isLoginPage) {
+    // If has token and on login page, redirect to index
+    window.location.href = 'index.html';
+    return false;
+  }
+  return true;
+}
+
+// This function will clear ALL tokens and storage data
+function clearAllStorageData() {
+  localStorage.clear();
+  sessionStorage.clear();
+  console.log('All storage data cleared');
+}
+
 // Handle login form submission
 document.addEventListener('DOMContentLoaded', () => {
+  // If the URL has a 'clear' parameter, clear all tokens first
+  if (window.location.search.includes('clear=true')) {
+    clearAllStorageData();
+    // Remove the parameter from the URL
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+  }
+  
   checkAuth();
   
   const loginForm = document.querySelector('form.box');
@@ -1107,7 +1177,7 @@ async function handleLogin(event) {
       
       // Make sure it looks like a JWT (has 2 dots)
       if (tokenText && tokenText.includes('.') && tokenText.split('.').length === 3) {
-        localStorage.setItem('authToken', tokenText);
+        sessionStorage.setItem('authToken', tokenText);
         window.location.href = 'index.html';
       } else {
         console.log("Invalid token received:", tokenText);
@@ -1125,23 +1195,6 @@ async function handleLogin(event) {
 }
 
 function logout() {
-  localStorage.removeItem('authToken');
+  sessionStorage.removeItem('authToken');
   window.location.href = 'login.html';
-}
-
-function checkAuth() {
-  const token = localStorage.getItem('authToken');
-  const isLoginPage = window.location.pathname.includes('login.html') || 
-                     window.location.pathname.endsWith('/');
-  
-  if (!token && !isLoginPage) {
-    // If no token and not on login page, redirect to login
-    window.location.href = 'login.html';
-    return false;
-  } else if (token && isLoginPage) {
-    // If has token but on login page, redirect to index
-    window.location.href = 'index.html';
-    return false;
-  }
-  return true;
 }

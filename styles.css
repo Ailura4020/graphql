@@ -155,3 +155,19 @@
   .logout-btn:hover {
     background: #c0392b;
   }
+
+  .login-helpers {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.8em;
+  }
+
+  .clear-link {
+    color: #7f8c8d;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .clear-link:hover {
+    color: #e74c3c;
+  }
