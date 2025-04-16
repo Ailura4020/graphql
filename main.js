@@ -1,7 +1,6 @@
 // URLs for the GraphQL API and authentication
 // These URLs are used to fetch data and authenticate users
-const GRAPHQL_URL = "https://zone01normandie.org/api/graphql-engine/v1/graphql";
-const AUTH_URL = "https://zone01normandie.org/api/auth/signin";
+import { GRAPHQL_URL, AUTH_URL } from "./api.js";
 
 // GraphQL query to fetch full student statistics
 const FULL_STUDENT_QUERY = `
