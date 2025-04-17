@@ -3,7 +3,7 @@
 const GRAPHQL_URL = "https://zone01normandie.org/api/graphql-engine/v1/graphql";
 const AUTH_URL = "https://zone01normandie.org/api/auth/signin";
 
-// GraphQL query to fetch full student statistics
+// Updated GraphQL query to include event_user data
 const FULL_STUDENT_QUERY = `
   query FullStudentStats {
     user {
@@ -99,6 +99,14 @@ const FULL_STUDENT_QUERY = `
         }
       }
     }
+    event_user(where: {event: {path: {_eq: "/rouen/div-01"}}}) {
+      level
+      eventId
+      userLogin
+      event {
+        path
+      }
+    }
   }
 `;
 
@@ -168,7 +176,19 @@ async function loadStudentData() {
   const data = await executeGraphQLQuery(FULL_STUDENT_QUERY);
   if (data && data.user && data.user.length > 0) {
     // Access the first user in the array
-    displayStudentData(data.user[0]);
+    const userData = data.user[0];
+    
+    // Find the div-01 event user entry
+    const div01Event = data.event_user.find(eu => 
+      eu.userLogin === userData.login && 
+      eu.event?.path === "/rouen/div-01"
+    );
+    
+    // Add official level to userData
+    userData.officialLevel = div01Event?.level || 0;
+    
+    // Now display the data with the official level
+    displayStudentData(userData);
   } else {
     console.error('Failed to load student data');
   }
@@ -200,7 +220,7 @@ function populateSidebar(userData) {
   
   console.log("User data for sidebar:", userData);
   
-  // Filter transactions to exclude piscine exercises, but include the specific piscine-js entry
+  // Filter transactions to exclude piscine exercises but include specific piscine-js entry
   const filteredTransactions = userData.transactions.filter(transaction => {
     const path = transaction.path || '';
     
@@ -213,21 +233,17 @@ function populateSidebar(userData) {
     return !path.includes('piscine-go') && !path.includes('piscine-js');
   });
   
-  // Calculate total XP from filtered transactions
+  // Calculate total XP from filtered transactions (just for display)
   const totalXP = filteredTransactions.reduce((sum, transaction) => {
     return sum + (transaction.amount || 0);
   }, 0);
   
   console.log("Total XP (excluding piscine):", totalXP);
-  console.log("Filtered out transactions:", userData.transactions.length - filteredTransactions.length);
   
-  const level = Math.floor(Math.sqrt(totalXP / 1000));
-  const currentLevelXP = level * level * 1000;
-  const nextLevelXP = (level + 1) * (level + 1) * 1000;
-  const xpUntilNextLevel = nextLevelXP - totalXP;
-  const xpProgress = Math.floor(((totalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100);
+  // Use official level from event_user
+  const level = userData.officialLevel || 0;
   
-  // Get user information from attrs or public fields - FIX HERE
+  // Get user information from attrs or public fields
   let userAttrs = {};
   try {
     // Check if attrs is already an object or a string that needs parsing
@@ -243,11 +259,11 @@ function populateSidebar(userData) {
   const lastName = userData.public?.lastName || userAttrs.lastName || '';
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : userData.login;
   
-  const location =  userAttrs.country || 'Not specified';
+  const location = userAttrs.country || 'Not specified';
   const phoneNumber = userAttrs.Phone || 'Not specified';
   const dateOfBirth = userAttrs.dateOfBirth || 'Not specified';
   
-  // Create user profile section
+  // Create user profile section - WITHOUT XP progress bar
   let html = `
     <div class="user-profile">
       <h2>User Information</h2>
@@ -255,14 +271,7 @@ function populateSidebar(userData) {
       <p class="user-name"><strong>Username:</strong> ${userData.login}</p>
       <p class="user-fullname"><strong>Full Name:</strong> ${fullName}</p>
       <p class="user-level"><strong>Level:</strong> ${level}</p>
-      <p class="user-xp-progress">
-        <strong>XP Progress:</strong> 
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${xpProgress}%;"></div>
-          <span>${totalXP.toLocaleString()} / ${nextLevelXP.toLocaleString()}</span>
-        </div>
-      </p>
-      <p class="xp-until-next"><strong>XP until next level:</strong> ${xpUntilNextLevel.toLocaleString()}</p>
+      <p class="user-total-xp"><strong>Total XP:</strong> ${totalXP.toLocaleString()}</p>
       <p class="user-location"><strong>Location:</strong> ${location}</p>
       <p class="user-phone"><strong>Phone:</strong> ${phoneNumber}</p>
       <p class="user-dob"><strong>Date of Birth:</strong> ${dateOfBirth}</p>
@@ -282,36 +291,9 @@ function populateSidebar(userData) {
     logoutButton.addEventListener('click', logout);
   }
 
-  // Add some styling for the progress bar
+  // Simplified styling - removed progress bar styles
   const style = document.createElement('style');
   style.textContent = `
-    .progress-bar {
-      width: 100%;
-      background-color: #333;
-      border-radius: 10px;
-      height: 20px;
-      margin-top: 5px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background-color: #2ecc71;
-      border-radius: 10px;
-    }
-    
-    .progress-bar span {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      text-shadow: 1px 1px 1px black;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    
     .user-profile p {
       margin: 10px 0;
       border-bottom: 1px solid #333;
@@ -331,6 +313,11 @@ function populateSidebar(userData) {
       font-size: 1.2em;
       font-weight: bold;
       color: #0097e6;
+    }
+    
+    .user-total-xp {
+      color: #2ecc71;
+      font-weight: bold;
     }
   `;
   
